@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./styles/css/reset.css">
+    <link rel="stylesheet" href="./styles/css/index.css">
+
+    <script>
+        let dragTarget = null;
+        let sum = 20;
+
+        function setDragTargetPos(x, y) {
+            let rect = dragTarget.getBoundingClientRect(x, y);
+            x = x - rect.width / 2;
+            y = y - rect.height / 2;
+            dragTarget.style.left = x + 'px';
+            dragTarget.style.top = y + 'px';
+        }
+
+        function total(e) {
+            let price = e.dataset.price;
+            sum = sum + parseInt(price);
+        }
+
+
+        let cheese = 0,
+            salami = 0,
+            mush = 0,
+            tomato = 0,
+            onion = 0;
+
+        function count(e) {
+            if (e.dataset.price == 1) {
+                onion++;
+                onionName = e.dataset.name;
+                priceOnion = e.dataset.price;
+            }
+            if (e.dataset.price == 2) {
+                tomato++;
+                tomatoName = e.dataset.name;
+                priceTomato = e.dataset.price;
+            }
+            if (e.dataset.price == 3) {
+                mush++;
+                mushName = e.dataset.name;
+                priceMush = e.dataset.price;
+            }
+            if (e.dataset.price == 4) {
+                cheese++;
+                cheeseName = e.dataset.name;
+                priceCheese = e.dataset.price;
+            }
+            if (e.dataset.price == 5) {
+                salami++;
+                salamiName = e.dataset.name;
+                priceSalami = e.dataset.price;
+            }
+        }
+
+        function checkIngradients(e, div, price, name) {
+            let tr = document.createElement('tr');
+            div.append(tr);
+            tr.innerHTML = '<th>'
+                + name + '</th><td>'
+                + e + '</td ><td>'
+                + price + '</td><td>'
+                + e * price + ' грн' + '</td>'
+        }
+
+        function checkSouse(e, div) {
+            let tr = document.createElement('tr');
+            div.append(tr);
+            tr.innerHTML = '<th>'
+                + e.name + '</th><td></td ><td></td><td>'
+                + e.value + ' грн' + '</td>'
+        }
+
+        function checkTotal(sum, div) {
+            let tr = document.createElement('tr');
+            div.append(tr);
+            tr.innerHTML = '<th>разом</th><td></td ><td></td><td>'
+                + sum + ' грн' + '</td>'
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            let checkbox = document.querySelectorAll('.checkbox'),
+                btn = document.querySelector('.order'),
+                showTotal = document.querySelector('.total-price'),
+                testo = document.querySelector('.testo'),
+                container = document.querySelector('.container'),
+                drop = document.querySelector('.clone'),
+                checkIngr = document.querySelector('.elem'),
+                checkSous = document.querySelector('.sous'),
+                checkSum = document.querySelector('tfoot'),
+                check = document.querySelector('.check'),
+                wrapper = document.querySelector('.wrapper')
+
+            showTotal.innerHTML = sum + ' грн';
+
+            window.addEventListener('mousedown', e => {
+                if (e.target.matches('.clone')) {
+                    dragTarget = e.target.cloneNode(true);
+                    dragTarget.style.position = 'absolute';
+                    document.body.append(dragTarget);
+                    setDragTargetPos(e.clientX, e.clientY);
+                }
+            })
+
+            window.addEventListener('mousemove', e => {
+                if (dragTarget)
+                    setDragTargetPos(e.clientX, e.clientY);
+                e.preventDefault();
+            });
+
+            window.addEventListener('mouseup', e => {
+
+                let rect = testo.getBoundingClientRect(),
+                    centerX = rect.x + rect.width / 2,
+                    centerY = rect.y + rect.height / 2,
+                    r = rect.width / 2,
+                    distance =
+                        Math.pow(r, 2) - Math.pow(e.clientX - centerX, 2) - Math.pow(e.clientY - centerY, 2);
+
+                if (dragTarget && distance <= 0) {
+                    dragTarget.remove();
+                    dragTarget = null;
+                } else if (dragTarget && distance > 0) {
+                    container.append(dragTarget);
+                    let dropPos = drop.getBoundingClientRect();
+                    dragTarget.style.left = e.clientX - rect.x - dropPos.width / 2 + 'px';
+                    dragTarget.style.top = e.clientY - rect.y - dropPos.height / 2 + 'px';
+                    dragTarget.classList.remove('clone');
+
+                    total(dragTarget)
+                    showTotal.innerHTML = sum + ' грн';
+                    count(dragTarget);
+
+                    dragTarget = null;
+
+                }
+            })
+
+            btn.addEventListener('click', () => {
+                if (onion > 0)
+                    checkIngradients(onion, checkIngr, priceOnion, onionName);
+                if (tomato > 0)
+                    checkIngradients(tomato, checkIngr, priceTomato, tomatoName);
+                if (mush > 0)
+                    checkIngradients(mush, checkIngr, priceMush, mushName);
+                if (cheese > 0)
+                    checkIngradients(cheese, checkIngr, priceCheese, cheeseName);
+                if (salami > 0)
+                    checkIngradients(salami, checkIngr, priceSalami, salamiName);
+                if (checkbox[0].checked) {
+                    checkSouse(checkbox[0], checkSous);
+                    sum += parseInt(checkbox[0].value);
+                }
+                if (checkbox[1].checked) {
+                    checkSouse(checkbox[1], checkSous);
+                    sum += parseInt(checkbox[1].value)
+                }
+                checkTotal(sum, checkSum);
+                check.style.display = 'block';
+                wrapper.style.display = 'none';
+                document.body.style.background = 'rgba(0, 119, 255, 0.479)'
+            })
+        })
+
+    </script>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <div class="ingr">
+            <img class="ingr-img clone" data-price="5" data-name="ковбаса" src="./assets/img/ksalami.png" alt="x">
+            <img class="ingr-img clone" data-price="4" data-name="сир" src="./assets/img/cheese.png" alt="x">
+            <img class="ingr-img clone" data-price="3" data-name="гриби" src="./assets/img/mushroom.png" alt="x">
+            <img class="ingr-img clone" data-price="2" data-name="помідор" src="./assets/img/tomato.png" alt="x">
+            <img class="ingr-img clone" data-price="1" data-name="цибуля" src="./assets/img/onion.png" alt="x">
+        </div>
+        <div class="container">
+            <img class="testo" src="./assets/img/testo.png" alt="x">
+        </div>
+        <div>
+            <input class="checkbox" type="checkbox" name="кетчуп" value="3">кетчуп <br>
+            <input class="checkbox" type="checkbox" name="майонез" value="3">майонез
+            <p>загальна ціна:</p>
+            <div class="total-price"></div> <br>
+            <button class="order">замовити</button>
+        </div>
+    </div>
+
+    <div class="check">
+        <table class="table" border="1" cellspacing='0' cellpadding='10'>
+            <thead>
+                <tr>
+                    <td colspan="4" align="center">піцерія "Суши Весла"</td>
+                </tr>
+                <tr>
+                    <th class="border">Назва</th>
+                    <th class="border">Кількість</th>
+                    <th class="border">Ціна</th>
+                    <th class="border">Сума</th>
+                </tr>
+            </thead>
+            <tbody class="elem">
+                <tr bgcolor="#bf9f30">
+                    <td colspan="4">Інгредієнти:</td>
+                </tr>
+                <tr>
+                    <th>основа</th>
+                    <td>1</td>
+                    <td>20</td>
+                    <td>20 грн</td>
+                </tr>
+            </tbody>
+            <tbody class="sous">
+                <tr bgcolor="#bf9f30">
+                    <td colspan="4">Соус:</td>
+                </tr>
+            </tbody>
+            <tfoot>
+            </tfoot>
+        </table>
+    </div>
+</body>
+
+</html>
